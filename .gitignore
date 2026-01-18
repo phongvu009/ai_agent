@@ -10,3 +10,7 @@ wheels/
 .venv
 
 note.txt
+
+#environments files
+.env
+.env.dev
