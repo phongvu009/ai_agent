@@ -1,0 +1,5 @@
+using click to create simple cli
+
+accept prompt from user . it can be option for now
+
+
