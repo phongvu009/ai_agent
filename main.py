@@ -1,8 +1,19 @@
+import os 
+import json
+
 import click
 from openai import OpenAI
+from dotenv import load_dotenv
+
+from client.response import TextDelta, TokenUsage,StreamEvent
+
+#load variables form .env
+load_dotenv()
+
+api_key = os.getenv("OPEN_ROUTER_API_KEY")
 #calling to openrouter 
 client = OpenAI(
-    api_key="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",
+    api_key=api_key,
     base_url="https://openrouter.ai/api/v1",
 )
 
@@ -20,10 +31,39 @@ def main(prompt: str|None = None):
         messages= messages,
     )
 
-    #agent response
-    response = completion.choices[0].message.content
+    #print(completion)
+    #print(json.dumps(completion.model_dump(), indent=2))
 
-    print(response)
+
+    #agent response
+    #response = completion.choices[0].message.content
+
+    #print(response)
+
+    message = completion.choices[0].message
+
+    text_delta = None
+    #wrap message content to TextDelta
+    if message.content:
+        text_delta = TextDelta(content=message.content)
+
+    usage = None
+    if completion.usage:
+        usage = TokenUsage(
+            prompt_tokens=completion.usage.prompt_tokens,
+            completion_tokens=completion.usage.completion_tokens,
+            total_tokens=completion.usage.total_tokens,
+            cached_tokens=completion.usage.prompt_tokens_details.cached_tokens
+
+        )
+    
+    print(StreamEvent(
+        text_delta=text_delta,
+        finish_reason=completion.choices[0].finish_reason,
+        usage=usage,
+
+    ))
+    
 
 
 
