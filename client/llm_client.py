@@ -1,5 +1,6 @@
 import os 
 from typing import Any
+import json
 
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -57,6 +58,29 @@ class LLMClient:
             usage=usage,
 
         ))
+    
+    def chat_chunk(self, messages: list[dict[str,Any]]):
+        client = self.get_client()
+
+        response = client.chat.completions.create(
+            model="mistralai/devstral-2512:free",
+            messages= messages,
+            stream=True
+        )
+
+        #print(response)
+
+        for chunk in response:
+            #print(chunk)
+            #print(json.dumps(chunk.model_dump(), indent=2))
+            
+            #each chunk has delta
+            delta = chunk.choices[0].delta
+            if delta.content:
+                #print(delta.content)
+                #To-do: force each data chunk event into StreamEvent
+                print(StreamEvent(text_delta=TextDelta(content=delta.content)))
+
         
 
 

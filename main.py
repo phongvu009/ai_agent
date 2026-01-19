@@ -14,10 +14,13 @@ def main(prompt: str|None = None):
 
     #get llm_client
     llm = LLMClient()
+    #Full response
+    # event = llm.chat_completion(messages)
+    #
+    # print(event)
 
-    event = llm.chat_completion(messages)
-
-    print(event)
+    #Chunk Event
+    llm.chat_chunk(messages)
     
     #print(completion)
     #print(json.dumps(completion.model_dump(), indent=2))
