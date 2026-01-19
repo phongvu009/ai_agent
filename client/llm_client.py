@@ -5,7 +5,7 @@ import json
 from openai import OpenAI
 from dotenv import load_dotenv
 
-from client.response import TextDelta, TokenUsage,StreamEvent
+from client.response import TextDelta, TokenUsage,StreamEvent,StreamEventType
 
 #load variables form .env
 load_dotenv()
@@ -53,6 +53,7 @@ class LLMClient:
             )
         
         return(StreamEvent(
+            type=StreamEventType.MESSAGE_COMPLETE,
             text_delta=text_delta,
             finish_reason=response.choices[0].finish_reason,
             usage=usage,
@@ -70,16 +71,30 @@ class LLMClient:
 
         #print(response)
 
+        #keep track of finish_reason to know when stream end
+        finish_reason = None
+        #accumulate all chunk to get final one
+        final_response = ""
+
         for chunk in response:
             #print(chunk)
             #print(json.dumps(chunk.model_dump(), indent=2))
-            
+
             #each chunk has delta
             delta = chunk.choices[0].delta
             if delta.content:
                 #print(delta.content)
                 #To-do: force each data chunk event into StreamEvent
-                print(StreamEvent(text_delta=TextDelta(content=delta.content)))
+                final_response += delta.content
+                print(StreamEvent(type=StreamEventType.TEXT_DELTA, text_delta=TextDelta(content=delta.content)))
+
+            if chunk.choices[0].finish_reason:
+                finish_reason = chunk.choices[0].finish_reason
+
+        if final_response:
+            print(f"final respone is:\n {final_response}")
+        print(finish_reason)
+        
 
         
 
